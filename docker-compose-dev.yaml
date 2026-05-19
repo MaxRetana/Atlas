@@ -1,0 +1,38 @@
+services:
+  db_atlas:
+    image: postgres:15
+    container_name: db_atlas
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=odoo
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - odoo-atlas-db-data:/var/lib/postgresql/data/pgdata
+    restart: unless-stopped
+    networks:
+      - odoo-atlas-network
+
+  odoo_atlas:
+    image: odoo:18.0
+    container_name: odoo_atlas
+    depends_on:
+      - db_atlas
+    ports:
+      - "666:8069"
+    volumes:
+      - odoo-atlas-web-data:/var/lib/odoo
+      - ./odoo/config/local.conf:/etc/odoo/odoo.conf
+      - ./extra-addons:/mnt/extra-addons
+    restart: unless-stopped
+    command: --dev all
+    networks:
+      - odoo-atlas-network
+
+volumes:
+  odoo-atlas-web-data:
+  odoo-atlas-db-data:
+
+networks:
+  odoo-atlas-network:
+    driver: bridge
